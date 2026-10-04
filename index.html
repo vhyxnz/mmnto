@@ -213,10 +213,17 @@ dialog.sheet[open]{animation:sheetup .26s ease}.grab{display:block}.edit .form{m
 <div id="selbar"><button id="sx" aria-label="Cancel"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button><b id="scount">0 selected</b><span class="sp"></span><button id="sall">All</button><button id="smove">Album</button><button id="sdl">Download</button><button class="del" id="sdel">Delete</button></div>
 <dialog id="mdlg" class="sheet"><div class="bk"><h3>Move to album</h3><div class="mlist" id="mlist"></div><div class="row"><button class="btn" id="mnew">+ New album</button><span class="sp"></span><button class="btn" id="mclose">Cancel</button></div></div></dialog>
 <dialog id="settingsDialog" class="sheet"><div class="bk">
-  <h3>Display settings</h3>
+  <h3>Settings</h3>
   <p style="margin:0;color:var(--mute);font-size:13px">Choose what appears with your photos. Dates are always shown.</p>
   <div class="setting"><div class="setting-copy"><b>Photo names</b><small>Show each photo's title.</small></div><label class="switch" aria-label="Show photo names"><input id="showNames" type="checkbox"><span></span></label></div>
   <div class="setting"><div class="setting-copy"><b>Extra details</b><small>Show event, location, and people.</small></div><label class="switch" aria-label="Show extra details"><input id="showDetails" type="checkbox"><span></span></label></div>
+  <div class="mlist">
+    <button class="btn" id="theme"><span id="tlabel">Dark mode</span></button>
+    <button class="btn" id="startsel">Select photos</button>
+    <button class="btn" id="exp">Export library</button>
+    <button class="btn" id="imp">Import library</button>
+    <button class="btn" id="bkb">Automatic backups</button>
+  </div>
   <div class="row"><span class="sp"></span><button class="btn pri" id="settingsClose">Done</button></div>
 </div></dialog>
 <nav id="tabs">
@@ -227,15 +234,7 @@ dialog.sheet[open]{animation:sheetup .26s ease}.grab{display:block}.edit .form{m
 <div id="toast"></div>
 <div class="menu" id="menu" hidden>
       <button id="up"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="1.5"/><path d="M21 16l-5-5-8 9"/></svg><span>Upload photos</span></button>
-      <button id="exp"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15V4M8 8l4-4 4 4M5 14v5h14v-5"/></svg><span>Export</span></button>
-      <button id="imp"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8zM14 3v5h5M12 18v-6M9 15l3-3 3 3"/></svg><span>Import</span></button>
-      <button id="bkb"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7M3 4v5h5M12 8v4l3 2"/></svg><span>Backups</span></button>
-      <button id="startsel"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l3 3 5-6"/></svg><span>Select photos</span></button>
-      <button id="favorites"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10Z"/></svg><span>Favorites</span></button>
-      <button id="install" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12M7 10l5 5 5-5M5 20h14"/></svg><span>Install MMNTO</span></button>
-      <hr>
       <button id="settings"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1-2.8 2.8-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.6v.2h-4V21a1.7 1.7 0 0 0-1-1.6 1.7 1.7 0 0 0-1.9.3l-.1.1L4.2 17l.1-.1a1.7 1.7 0 0 0 .3-1.9A1.7 1.7 0 0 0 3 14H2.8v-4H3a1.7 1.7 0 0 0 1.6-1 1.7 1.7 0 0 0-.3-1.9L4.2 7 7 4.2l.1.1A1.7 1.7 0 0 0 9 4.6a1.7 1.7 0 0 0 1-1.6v-.2h4V3a1.7 1.7 0 0 0 1 1.6 1.7 1.7 0 0 0 1.9-.3l.1-.1L19.8 7l-.1.1a1.7 1.7 0 0 0-.3 1.9 1.7 1.7 0 0 0 1.6 1h.2v4H21a1.7 1.7 0 0 0-1.6 1Z"/></svg><span>Settings</span></button>
-      <button id="theme"><span class="ic" id="ticon"></span><span id="tlabel">Dark mode</span></button>
     </div>
 
 <button id="fab" aria-label="Upload photos"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></button>
@@ -331,7 +330,7 @@ function carousel(list,g){
     if(n>1&&(Math.abs(dx)>tr.offsetWidth*.3||(v>.5&&Math.abs(dx)>30)))slide(dx<0?1:-1);
     else{tr.style.transition='transform .25s ease';tr.style.transform='translateX(0)'}};
   st.onpointerup=end;st.onpointercancel=end;
-  press(st,e=>{if(moved)return;const sl=document.elementsFromPoint(e.clientX,e.clientY).find(x=>x.classList&&x.classList.contains('slide')),o=sl?+sl.dataset.o:0;o?slide(o):openView(p)},()=>{if(!moved)edit(p)});
+  press(st,e=>{if(moved)return;const sl=document.elementsFromPoint(e.clientX,e.clientY).find(x=>x.classList&&x.classList.contains('slide')),o=sl?+sl.dataset.o:0;o?slide(o):openView(p)},()=>{if(!moved)edit(p)},()=>{if(!moved)toggleFavorite(p)});
   st.append(tr,el('span','cnt',(idx+1)+' / '+list.length));if(list.length>1)st.append(l,r);
   const cap=el('div','cap');if(displayPrefs.names)cap.append(el('b',0,p.title||'Untitled'));
   cap.append(el('p',0,photoMeta(p).join(' · ')||'No date'));
@@ -358,14 +357,14 @@ function render(){
     .sort((a,b)=>(b.date||'').localeCompare(a.date||'')||b.added-a.added);
   {const al=albums.find(a=>a.id===curAlbum),base=al?photos.filter(p=>p.album===al.id):photos,n=onlyFavorites?base.filter(p=>p.favorite).length:base.length;$('count').textContent=(onlyFavorites?'Favorites · ':al?al.name+' · ':'')+n+' photo'+(n===1?'':'s')}
   shown=list;
-  if(!list.length){g.className='';g.innerHTML=onlyFavorites?'<div class="empty"><h2>No favorites yet</h2>Open a photo and tap the heart to add it here.</div>':(photos.length&&(!curAlbum||photos.some(p=>p.album===curAlbum)))?'<div class="empty"><h2>No matches</h2>Try a different search.</div>':curAlbum?'<div class="empty"><h2>This album is empty</h2>Upload while this album is open, or choose it in the details of any photo.</div>':'<div class="empty"><h2>No photos yet</h2>Tap + to upload, or drop your photobooth pictures here.</div>';return}
+  if(!list.length){g.className='';g.innerHTML=onlyFavorites?'<div class="empty"><h2>No favorites yet</h2>Double-tap any photo to add it here.</div>':(photos.length&&(!curAlbum||photos.some(p=>p.album===curAlbum)))?'<div class="empty"><h2>No matches</h2>Try a different search.</div>':curAlbum?'<div class="empty"><h2>This album is empty</h2>Upload while this album is open, or choose it in the details of any photo.</div>':'<div class="empty"><h2>No photos yet</h2>Tap + to upload, or drop your photobooth pictures here.</div>';return}
   if(view==='carousel'){carousel(list,g);return}
   g.className='grid';
   list.forEach(p=>{const c=document.createElement('div');c.className='card';
     const i=document.createElement('img');i.src=p.img;i.alt=p.title||'photo';
     const d=document.createElement('div'),b=document.createElement('b'),s=document.createElement('small');
     b.textContent=p.title||'Untitled';s.textContent=photoMeta(p).join(' · ')||'No date';
-    if(displayPrefs.names)d.append(b);d.append(s);const ck=el('span','chk');ck.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7"/></svg>';c.append(i,d,ck);if(p.favorite)c.append(el('span','favmark','♥'));if(sel.has(p.id))c.classList.add('sel');press(c,()=>selecting?toggleSel(p,c):openView(p),()=>{if(!selecting){selecting=true;document.body.classList.add('selecting')}if(!sel.has(p.id))toggleSel(p,c)});g.append(c)});
+    if(displayPrefs.names)d.append(b);d.append(s);const ck=el('span','chk');ck.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7"/></svg>';c.append(i,d,ck);if(p.favorite)c.append(el('span','favmark','♥'));if(sel.has(p.id))c.classList.add('sel');press(c,()=>selecting?toggleSel(p,c):openView(p),()=>{if(!selecting){selecting=true;document.body.classList.add('selecting')}if(!sel.has(p.id))toggleSel(p,c)},()=>{if(!selecting)toggleFavorite(p)});g.append(c)});
 }
 function edit(p){cur=p;$('dimg').src=p.img;
   $('f-title').value=p.title;$('f-date').value=p.date;$('f-place').value=p.place;$('f-people').value=p.people;$('f-notes').value=p.notes;
@@ -407,13 +406,13 @@ $('jfile').onchange=async e=>{const f=e.target.files[0];e.target.value='';if(!f)
   catch(err){toast('That file isn\'t a valid export')}};
 
 // ---- tap = zoom view, long press = edit ----
-function press(node,tap,long){
-  let t=null,sx=0,sy=0,fired=false;const clr=()=>{clearTimeout(t);t=null};
+function press(node,tap,long,doubleTap){
+  let t=null,sx=0,sy=0,fired=false,lastTap=0,tapTimer=null;const clr=()=>{clearTimeout(t);t=null};
   node.addEventListener('pointerdown',e=>{if(e.target.closest&&e.target.closest('.nav'))return;fired=false;sx=e.clientX;sy=e.clientY;clr();
     t=setTimeout(()=>{t=null;fired=true;try{navigator.vibrate&&navigator.vibrate(15)}catch(_){}long()},500)});
   node.addEventListener('pointermove',e=>{if(t&&Math.hypot(e.clientX-sx,e.clientY-sy)>8)clr()});
   ['pointerup','pointercancel','pointerleave'].forEach(n=>node.addEventListener(n,clr));
-  node.addEventListener('click',e=>{if(fired){fired=false;return}tap(e)});
+  node.addEventListener('click',e=>{if(fired){fired=false;return}if(!doubleTap)return tap(e);const now=Date.now();if(now-lastTap<320){clearTimeout(tapTimer);lastTap=0;doubleTap(e)}else{lastTap=now;tapTimer=setTimeout(()=>{lastTap=0;tap(e)},260)}});
   node.addEventListener('contextmenu',e=>e.preventDefault());
 }
 let lbList=[],lbI=0,lbBusy=false,lbMoved=false,lbDirty=false;
@@ -470,7 +469,7 @@ const SUN='<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r
   MOON='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/></svg>',
   mq=matchMedia('(prefers-color-scheme: dark)');
 const isDark=()=>{const t=document.documentElement.dataset.theme;return t?t==='dark':mq.matches};
-function applyTheme(){const d=isDark();$('tlabel').textContent=d?'Light mode':'Dark mode';$('ticon').innerHTML=d?SUN:MOON}
+function applyTheme(){const d=isDark();$('tlabel').textContent=d?'Use light mode':'Use dark mode'}
 $('theme').onclick=()=>{const t=isDark()?'light':'dark';document.documentElement.dataset.theme=t;try{localStorage.setItem('pb-theme',t)}catch(e){}applyTheme()};
 if(mq.addEventListener)mq.addEventListener('change',applyTheme);
 applyTheme();
@@ -483,9 +482,10 @@ function albumsTab(g){g.className='agrid';
     if(p){const i=el('img');i.src=p.img;i.alt='';i.draggable=false;box.append(i)}else box.innerHTML=PH;
     t.append(box,el('b',0,name),el('small',0,ps.length+' photo'+(ps.length===1?'':'s')));press(t,fn,lp||(()=>{}));g.append(t)};
   tile('All photos',photos,()=>{curAlbum='';onlyFavorites=false;tab='photos';idx=0;render()});
+  tile('Favorites',photos.filter(p=>p.favorite),()=>{curAlbum='';onlyFavorites=true;tab='photos';idx=0;render()});
   albums.slice().sort((a,b)=>a.created-b.created).forEach(a=>tile(a.name,photos.filter(p=>p.album===a.id),()=>{curAlbum=a.id;onlyFavorites=false;tab='photos';idx=0;render()},()=>openAlbum(a)));
   const n=el('div','atile');n.innerHTML='<div class="acov new">+</div><b>New album</b>';n.onclick=()=>openAlbum(null);g.append(n)}
-function startSelect(){exitSelect();tab='photos';view='grid';selecting=true;document.body.classList.add('selecting');$('menu').hidden=true;render();updSel()}
+function startSelect(){exitSelect();if($('settingsDialog').open)$('settingsDialog').close();tab='photos';view='grid';selecting=true;document.body.classList.add('selecting');$('menu').hidden=true;render();updSel()}
 function exitSelect(){if(!selecting)return;selecting=false;sel.clear();document.body.classList.remove('selecting');document.querySelectorAll('.card.sel').forEach(c=>c.classList.remove('sel'))}
 function updSel(){$('scount').textContent=sel.size+' selected';$('sdel').textContent='Delete';$('sdel').dataset.sure=''}
 function toggleSel(p,c){sel.has(p.id)?sel.delete(p.id):sel.add(p.id);c.classList.toggle('sel',sel.has(p.id));updSel()}
@@ -517,25 +517,20 @@ $('tal').onclick=()=>{exitSelect();tab='albums';$('menu').hidden=true;render()};
 $('fab').onclick=()=>$('file').click();
 $('aback').onclick=()=>{tab='albums';curAlbum='';onlyFavorites=false;render()};
 $('startsel').onclick=startSelect;
-$('favorites').onclick=()=>{exitSelect();tab='photos';curAlbum='';onlyFavorites=true;idx=0;render()};
 $('settings').onclick=()=>{$('showNames').checked=displayPrefs.names;$('showDetails').checked=displayPrefs.details;$('settingsDialog').showModal()};
 function saveDisplayPrefs(){displayPrefs={names:$('showNames').checked,details:$('showDetails').checked};try{localStorage.setItem('mmnto-display',JSON.stringify(displayPrefs))}catch(e){}render();if($('lb').open)showAt(lbI)}
 $('showNames').onchange=saveDisplayPrefs;$('showDetails').onchange=saveDisplayPrefs;$('settingsClose').onclick=()=>$('settingsDialog').close();
-$('install').onclick=async()=>{if(!window.installPrompt)return;window.installPrompt.prompt();await window.installPrompt.userChoice;window.installPrompt=null;$('install').hidden=true};
 $('menu').onclick=()=>{$('menu').hidden=true};
 document.addEventListener('click',()=>{$('menu').hidden=true});
 addEventListener('keydown',e=>{if(e.key==='Escape')$('menu').hidden=true});
 $('up').onclick=()=>$('file').click();
 $('file').onchange=e=>{addFiles([...e.target.files]);e.target.value=''};
 $('q').oninput=()=>{idx=0;render()};$('vg').onclick=()=>setView('grid');$('vc').onclick=()=>setView('carousel');
-$('bkb').onclick=showBackups;$('bnow').onclick=async()=>{await backup(false);showBackups()};$('bclose').onclick=()=>$('bdlg').close();
+$('bkb').onclick=()=>{$('settingsDialog').close();showBackups()};$('bnow').onclick=async()=>{await backup(false);showBackups()};$('bclose').onclick=()=>$('bdlg').close();
 ['dragenter','dragover'].forEach(t=>addEventListener(t,e=>{e.preventDefault();document.body.classList.add('drag')}));
 ['dragleave','drop'].forEach(t=>addEventListener(t,e=>{e.preventDefault();document.body.classList.remove('drag')}));
 addEventListener('drop',e=>addFiles([...e.dataTransfer.files]));
 
-// ---- installable offline app ----
-addEventListener('beforeinstallprompt',e=>{e.preventDefault();window.installPrompt=e;$('install').hidden=false});
-addEventListener('appinstalled',()=>{window.installPrompt=null;$('install').hidden=true;toast('MMNTO installed')});
 if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));
 
 (async()=>{
