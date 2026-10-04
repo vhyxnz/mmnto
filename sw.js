@@ -1,5 +1,5 @@
-const CACHE='mmnto-shell-v2';
-const SHELL=['./Momentos.html','./manifest.webmanifest','./icon-180.png','./icon-192.png','./icon-512.png'];
+const CACHE='mmnto-shell-v3';
+const SHELL=['./','./index.html','./manifest.webmanifest','./icon-180.png','./icon-192.png','./icon-512.png'];
 
 self.addEventListener('install',event=>{
   event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(SHELL)).then(()=>self.skipWaiting()));
@@ -13,8 +13,8 @@ self.addEventListener('fetch',event=>{
   if(event.request.method!=='GET'||new URL(event.request.url).origin!==location.origin)return;
   if(event.request.mode==='navigate'){
     event.respondWith(fetch(event.request).then(response=>{
-      const copy=response.clone();caches.open(CACHE).then(cache=>cache.put('./Momentos.html',copy));return response;
-    }).catch(()=>caches.match('./Momentos.html')));
+      const copy=response.clone();caches.open(CACHE).then(cache=>cache.put('./index.html',copy));return response;
+    }).catch(()=>caches.match('./index.html')));
     return;
   }
   event.respondWith(caches.match(event.request).then(cached=>cached||fetch(event.request).then(response=>{

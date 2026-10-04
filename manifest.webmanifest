@@ -1,9 +1,9 @@
 {
-  "id": "./Momentos.html",
+  "id": "./",
   "name": "MMNTO",
   "short_name": "MMNTO",
   "description": "A private, offline-first home for your favorite photos and memories.",
-  "start_url": "./Momentos.html",
+  "start_url": "./",
   "scope": "./",
   "display": "standalone",
   "orientation": "any",
