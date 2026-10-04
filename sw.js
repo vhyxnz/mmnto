@@ -1,4 +1,4 @@
-const CACHE='mmnto-shell-v3';
+const CACHE='mmnto-shell-v5';
 const SHELL=['./','./index.html','./manifest.webmanifest','./icon-180.png','./icon-192.png','./icon-512.png'];
 
 self.addEventListener('install',event=>{
