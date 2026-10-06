@@ -323,7 +323,7 @@ async function justifyGrid(g){
   const width=g.clientWidth,gap=innerWidth<=640?6:10,target=innerWidth<=640?112:180;
   const ratio=c=>{const i=c.querySelector('img');return i&&i.naturalHeight?i.naturalWidth/i.naturalHeight:1};
   const rows=[];let row=[],sum=0;
-  cards.forEach(c=>{row.push(c);sum+=ratio(c);const h=(width-gap*(row.length-1))/sum;if(h<=target){rows.push({cards:row,height:h});row=[];sum=0}});
+  cards.forEach(c=>{row.push(c);sum+=ratio(c);const h=(width-gap*(row.length-1))/sum;if(h<=target||row.length===4){rows.push({cards:row,height:Math.min(target,h)});row=[];sum=0}});
   if(row.length)rows.push({cards:row,height:Math.min(target,(width-gap*(row.length-1))/sum)});
   g.innerHTML='';rows.forEach(r=>{const line=el('div','photo-row');r.cards.forEach(c=>{const ar=ratio(c);c.style.width=Math.max(36,r.height*ar)+'px';c.style.setProperty('--photo-h',r.height+'px');line.append(c)});g.append(line)});
 }
