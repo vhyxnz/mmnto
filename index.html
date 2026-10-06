@@ -57,10 +57,11 @@ input,textarea,button{font:inherit;color:inherit}
 main{max-width:1100px;margin:auto;padding:16px;min-height:60vh}
 .meta{color:var(--mute);font-size:13px;margin:0 0 14px;display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}
 :root{--strip:1/3}
-.grid{display:block;columns:140px;column-gap:14px}
-.grid .card{display:inline-block;width:100%;margin:0 0 16px;break-inside:avoid;vertical-align:top}
+.grid{display:flex;flex-direction:column;gap:14px}
+.photo-row{display:flex;align-items:flex-start;gap:10px;width:100%}
+.photo-row .card{flex:none;min-width:0}
 .card{cursor:pointer}
-.card img{width:100%;height:auto;aspect-ratio:auto;object-fit:contain;display:block;border-radius:10px;background:var(--soft);transition:opacity .15s}
+.card img{width:100%;height:var(--photo-h,150px);aspect-ratio:auto;object-fit:cover;display:block;border-radius:10px;background:var(--soft);transition:opacity .15s}
 .card:hover img{opacity:.88}
 .card div{padding:6px 2px 0}
 .card b{display:block;font-weight:600;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -112,7 +113,7 @@ textarea{resize:vertical;min-height:70px}
 .chip.add{border-style:dashed;color:var(--mute);background:none}
 .link{border:0;background:none;color:var(--acc);cursor:pointer;padding:0;font-size:13px}
 @media(max-width:640px){.edit{grid-template-columns:1fr}.edit .pic img{max-height:45vh}}
-@media(max-width:640px){.grid{columns:92px;column-gap:8px}.grid .card{margin-bottom:10px}.card div{padding-top:4px}.card b{font-size:12px}.card small{font-size:10px;line-height:1.25;display:block}}
+@media(max-width:640px){.grid{gap:9px}.photo-row{gap:6px}.card div{padding-top:4px}.card b{font-size:12px}.card small{font-size:10px;line-height:1.25;display:block}}
 
 #toast{bottom:calc(88px + env(safe-area-inset-bottom,0px))}
 main{padding-bottom:calc(150px + env(safe-area-inset-bottom,0px))}
@@ -315,6 +316,17 @@ function slide(d){if(shown.length<2||busy||!trk)return go(d);busy=true;trk.style
 function go(d){const n=shown.length;if(!n)return;idx=(idx+d+n)%n;render()}
 function togglePlay(){if(timer){clearInterval(timer);timer=null}else timer=setInterval(()=>slide(1),3500);render()}
 function el(t,c,x){const e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e}
+async function justifyGrid(g){
+  const cards=[...g.children];if(!cards.length)return;const token={};g._layoutToken=token;
+  await Promise.all(cards.map(c=>{const i=c.querySelector('img');return i&&i.decode?i.decode().catch(()=>{}):Promise.resolve()}));
+  if(g._layoutToken!==token||!g.classList.contains('grid'))return;
+  const width=g.clientWidth,gap=innerWidth<=640?6:10,target=innerWidth<=640?112:180;
+  const ratio=c=>{const i=c.querySelector('img');return i&&i.naturalHeight?i.naturalWidth/i.naturalHeight:1};
+  const rows=[];let row=[],sum=0;
+  cards.forEach(c=>{row.push(c);sum+=ratio(c);const h=(width-gap*(row.length-1))/sum;if(h<=target){rows.push({cards:row,height:h});row=[];sum=0}});
+  if(row.length)rows.push({cards:row,height:Math.min(target,(width-gap*(row.length-1))/sum)});
+  g.innerHTML='';rows.forEach(r=>{const line=el('div','photo-row');r.cards.forEach(c=>{const ar=ratio(c);c.style.width=Math.max(36,r.height*ar)+'px';c.style.setProperty('--photo-h',r.height+'px');line.append(c)});g.append(line)});
+}
 function carousel(list,g){
   shown=list;g.className='';g.innerHTML='';if(idx>=list.length)idx=0;
   const p=list[idx],w=el('div','car'),st=el('div','stage');
@@ -367,6 +379,7 @@ function render(){
     const d=document.createElement('div'),b=document.createElement('b'),s=document.createElement('small');
     b.textContent=p.title||'Untitled';s.textContent=photoMeta(p).join(' · ')||'No date';
     if(displayPrefs.names)d.append(b);d.append(s);const ck=el('span','chk');ck.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7"/></svg>';c.append(i,d,ck);if(p.favorite)c.append(el('span','favmark','♥'));if(sel.has(p.id))c.classList.add('sel');press(c,()=>selecting?toggleSel(p,c):openView(p),()=>{if(!selecting){selecting=true;document.body.classList.add('selecting')}if(!sel.has(p.id))toggleSel(p,c)},()=>{if(!selecting)toggleFavorite(p)});g.append(c)});
+  justifyGrid(g);
 }
 function edit(p){cur=p;$('dimg').src=p.img;
   $('f-title').value=p.title;$('f-date').value=p.date;$('f-place').value=p.place;$('f-people').value=p.people;$('f-notes').value=p.notes;
@@ -532,6 +545,7 @@ $('bkb').onclick=()=>{$('settingsDialog').close();showBackups()};$('bnow').oncli
 ['dragenter','dragover'].forEach(t=>addEventListener(t,e=>{e.preventDefault();document.body.classList.add('drag')}));
 ['dragleave','drop'].forEach(t=>addEventListener(t,e=>{e.preventDefault();document.body.classList.remove('drag')}));
 addEventListener('drop',e=>addFiles([...e.dataTransfer.files]));
+let resizeTimer;addEventListener('resize',()=>{clearTimeout(resizeTimer);resizeTimer=setTimeout(()=>{if(tab==='photos'&&view==='grid')render()},150)});
 
 if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));
 
