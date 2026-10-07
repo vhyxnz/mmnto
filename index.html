@@ -142,10 +142,10 @@ main{padding-bottom:calc(150px + env(safe-area-inset-bottom,0px))}
 body.selecting .chk{display:flex}
 .card.sel .chk{background:var(--acc);border-color:var(--acc);color:var(--accink)}.card.sel .chk svg{opacity:1}
 .card.sel img{transform:scale(.92);border-radius:0}
-#selbar{position:fixed;top:0;left:0;right:0;z-index:30;display:none;align-items:center;gap:4px;padding:calc(10px + env(safe-area-inset-top,0px)) 10px 10px;background:var(--card);border-bottom:1px solid var(--line)}
+#selbar{position:fixed;top:0;left:0;right:0;z-index:30;display:none;align-items:center;gap:4px;padding:calc(10px + env(safe-area-inset-top,0px)) 10px 10px;background:var(--card);border-bottom:1px solid var(--line);overflow-x:auto;white-space:nowrap}
 body.selecting #selbar{display:flex}
 #selbar .sp{flex:1}#selbar svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;display:block}
-#selbar button{border:0;background:none;color:var(--ink);padding:7px 8px;font-size:13px;cursor:pointer;border-radius:8px}
+#selbar button{border:0;background:none;color:var(--ink);padding:7px 8px;font-size:13px;cursor:pointer;border-radius:8px;flex:none}
 #selbar button.del{color:var(--danger)}
 .mlist{display:flex;flex-direction:column;gap:8px;max-height:50vh;overflow:auto}.mlist .btn{text-align:left}
 .setting{display:flex;align-items:center;gap:16px;padding:13px 0;border-bottom:1px solid var(--line)}
@@ -157,6 +157,11 @@ body.selecting #selbar{display:flex}
 .switch input:focus-visible+span{outline:3px solid color-mix(in srgb,var(--acc) 35%,transparent);outline-offset:2px}
 .favmark{position:absolute;left:8px;top:8px;color:#fff;background:rgba(0,0,0,.52);width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;line-height:1}
 .btn.faved{color:#d94b65;border-color:#d94b65}.ibtn.faved{color:#ff7890;background:rgba(0,0,0,.55)}
+.heartburst{position:absolute;left:50%;top:42%;transform:translate(-50%,-50%) scale(.4);font-size:56px;color:#fff;text-shadow:0 3px 16px #0009;pointer-events:none;z-index:5;animation:heartpop .65s ease forwards}
+@keyframes heartpop{45%{transform:translate(-50%,-50%) scale(1.15);opacity:1}100%{transform:translate(-50%,-50%) scale(1.35);opacity:0}}
+.setting-select{min-width:130px;padding:7px 9px;border:1px solid var(--line);border-radius:9px;background:var(--bg);color:var(--ink)}
+.storage-stat{padding:11px 0;color:var(--mute);font-size:13px}
+.trash-list{display:flex;flex-direction:column;gap:9px;max-height:55vh;overflow:auto}.trash-item{display:flex;align-items:center;gap:10px}.trash-item img{width:48px;height:58px;object-fit:cover}.trash-item div{min-width:0;flex:1}.trash-item b,.trash-item small{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.trash-item small{color:var(--mute)}
 .grab{display:none;position:absolute;top:0;left:0;right:0;height:30px;z-index:3;touch-action:none;cursor:grab}
 .grab::after{content:"";position:absolute;top:9px;left:50%;width:42px;height:5px;margin-left:-21px;border-radius:3px;background:rgba(255,255,255,.75)}
 @keyframes sheetup{from{transform:translateY(100%)}}
@@ -211,24 +216,30 @@ dialog.sheet[open]{animation:sheetup .26s ease}.grab{display:block}.edit .form{m
   <h3 id="atitle">New album</h3>
   <label>Name<input id="aname" maxlength="40" placeholder="e.g. Summer 2026"></label>
   <p id="anote" style="margin:0;color:var(--mute);font-size:13px"></p>
-  <div class="row"><button class="btn pri" id="asave">Save</button><button class="btn del" id="adel" hidden>Delete album</button><span class="sp"></span><button class="btn" id="aclose">Cancel</button></div>
+  <div class="row"><button class="btn pri" id="asave">Save</button><button class="btn" id="asetcover" hidden>Choose cover</button><button class="btn del" id="adel" hidden>Delete album</button><span class="sp"></span><button class="btn" id="aclose">Cancel</button></div>
 </div></dialog>
-<div id="selbar"><button id="sx" aria-label="Cancel"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button><b id="scount">0 selected</b><span class="sp"></span><button id="sall">All</button><button id="smove">Album</button><button id="sdl">Download</button><button class="del" id="sdel">Delete</button></div>
+<div id="selbar"><button id="sx" aria-label="Cancel"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button><b id="scount">0 selected</b><span class="sp"></span><button id="sall">All</button><button id="sfav">Favorite</button><button id="smove">Album</button><button id="sdl">Download</button><button class="del" id="sdel">Delete</button></div>
 <dialog id="mdlg" class="sheet"><div class="bk"><h3>Move to album</h3><div class="mlist" id="mlist"></div><div class="row"><button class="btn" id="mnew">+ New album</button><span class="sp"></span><button class="btn" id="mclose">Cancel</button></div></div></dialog>
 <dialog id="settingsDialog" class="sheet"><div class="bk">
   <h3>Settings</h3>
   <p style="margin:0;color:var(--mute);font-size:13px">Choose what appears with your photos. Dates are always shown.</p>
   <div class="setting"><div class="setting-copy"><b>Photo names</b><small>Show each photo's title.</small></div><label class="switch" aria-label="Show photo names"><input id="showNames" type="checkbox"><span></span></label></div>
   <div class="setting"><div class="setting-copy"><b>Extra details</b><small>Show event, location, and people.</small></div><label class="switch" aria-label="Show extra details"><input id="showDetails" type="checkbox"><span></span></label></div>
+  <div class="setting"><div class="setting-copy"><b>Sort photos</b><small>Choose the library order.</small></div><select id="sortPhotos" class="setting-select"><option value="date-desc">Newest date</option><option value="date-asc">Oldest date</option><option value="added-desc">Recently added</option><option value="name">Name</option></select></div>
+  <div class="setting"><div class="setting-copy"><b>Grid columns</b><small>Choose the grid density.</small></div><select id="gridColumns" class="setting-select"><option value="2">2 columns</option><option value="3">3 columns</option><option value="4">4 columns</option></select></div>
+  <div class="storage-stat" id="storageStat">Calculating storage…</div>
   <div class="mlist">
     <button class="btn" id="theme"><span id="tlabel">Dark mode</span></button>
     <button class="btn" id="startsel">Select photos</button>
     <button class="btn" id="exp">Export library</button>
     <button class="btn" id="imp">Import library</button>
     <button class="btn" id="bkb">Automatic backups</button>
+    <button class="btn" id="trashButton">Recently deleted</button>
   </div>
   <div class="row"><span class="sp"></span><button class="btn pri" id="settingsClose">Done</button></div>
 </div></dialog>
+<dialog id="trashDialog" class="sheet"><div class="bk"><h3>Recently deleted</h3><p style="margin:0;color:var(--mute);font-size:13px">Photos are permanently removed after 30 days.</p><div class="trash-list" id="trashList"></div><div class="row"><button class="btn del" id="emptyTrash">Empty trash</button><span class="sp"></span><button class="btn pri" id="trashClose">Done</button></div></div></dialog>
+<dialog id="coverDialog" class="sheet"><div class="bk"><h3>Choose album cover</h3><div class="agrid" id="coverList"></div><div class="row"><button class="btn" id="coverAuto">Use newest photo</button><span class="sp"></span><button class="btn" id="coverClose">Cancel</button></div></div></dialog>
 <nav id="tabs">
   <button id="tph" data-tab="photos"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7.5" height="7.5" rx="1.5"/><rect x="13.5" y="3" width="7.5" height="7.5" rx="1.5"/><rect x="3" y="13.5" width="7.5" height="7.5" rx="1.5"/><rect x="13.5" y="13.5" width="7.5" height="7.5" rx="1.5"/></svg><span>Photos</span></button>
   <button id="tal" data-tab="albums"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="8" width="16" height="12" rx="2"/><path d="M7 4.5h10"/></svg><span>Albums</span></button>
@@ -244,16 +255,17 @@ dialog.sheet[open]{animation:sheetup .26s ease}.grab{display:block}.edit .form{m
 <script>
 const $=id=>document.getElementById(id);
 let tab='photos',selecting=false;const sel=new Set();
-let photos=[],albums=[],curAlbum='',cur=null,db,bt,onlyFavorites=false;
-let displayPrefs={names:true,details:true};
+let photos=[],albums=[],trash=[],curAlbum='',cur=null,db,bt,onlyFavorites=false;
+let displayPrefs={names:true,details:true,sort:'date-desc',columns:4};
 try{displayPrefs={...displayPrefs,...JSON.parse(localStorage.getItem('mmnto-display')||'{}')}}catch(e){}
-const photoMeta=p=>[p.date,displayPrefs.details&&p.place,displayPrefs.details&&p.people&&'With '+p.people].filter(Boolean);
+const friendlyDate=s=>{if(!s)return'';const d=new Date(s+'T00:00:00');return Number.isNaN(+d)?s:d.toLocaleDateString([],{year:'numeric',month:'short',day:'numeric'})};
+const photoMeta=p=>[friendlyDate(p.date),displayPrefs.details&&p.place,displayPrefs.details&&p.people&&'With '+p.people].filter(Boolean);
 const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
 function toast(m){const t=$('toast');t.textContent=m;t.classList.add('on');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('on'),2200)}
 
 // ---- storage (IndexedDB) ----
-function open(){return new Promise((res,rej)=>{const r=indexedDB.open('photobooth',2);
-  r.onupgradeneeded=()=>{const d=r.result;['photos','backups','albums'].forEach(n=>{if(!d.objectStoreNames.contains(n))d.createObjectStore(n,{keyPath:n==='backups'?'ts':'id'})})};
+function open(){return new Promise((res,rej)=>{const r=indexedDB.open('photobooth',3);
+  r.onupgradeneeded=()=>{const d=r.result;['photos','backups','albums','trash'].forEach(n=>{if(!d.objectStoreNames.contains(n))d.createObjectStore(n,{keyPath:n==='backups'?'ts':'id'})})};
   r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)})}
 const req=r=>new Promise((res,rej)=>{r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)});
 const store=(n,m='readonly')=>db.transaction(n,m).objectStore(n);
@@ -261,6 +273,12 @@ const putPhoto=p=>req(store('photos','readwrite').put(p));
 const putAlbum=a=>req(store('albums','readwrite').put(a));
 const delAlbum=id=>req(store('albums','readwrite').delete(id));
 const delPhoto=id=>req(store('photos','readwrite').delete(id));
+const putTrash=p=>req(store('trash','readwrite').put(p));
+const delTrash=id=>req(store('trash','readwrite').delete(id));
+async function moveToTrash(p){const item={...p,deletedAt:Date.now()};await putTrash(item);await delPhoto(p.id);trash=trash.filter(x=>x.id!==p.id);trash.unshift(item)}
+async function purgeOldTrash(){const cutoff=Date.now()-30*86400000;for(const p of trash.filter(p=>p.deletedAt<cutoff)){await delTrash(p.id)}trash=trash.filter(p=>p.deletedAt>=cutoff)}
+async function restoreTrash(p){const restored={...p};delete restored.deletedAt;await putPhoto(restored);await delTrash(p.id);trash=trash.filter(x=>x.id!==p.id);photos.unshift(restored);showTrash();render();toast('Photo restored')}
+async function showTrash(){const list=$('trashList');list.innerHTML='';if(!trash.length)list.innerHTML='<div class="empty" style="padding:28px 14px"><h2>Trash is empty</h2>Deleted photos stay here for 30 days.</div>';trash.slice().sort((a,b)=>b.deletedAt-a.deletedAt).forEach(p=>{const item=el('div','trash-item'),im=el('img'),copy=el('div'),name=el('b',0,p.title||'Untitled'),when=el('small',0,'Deleted '+new Date(p.deletedAt).toLocaleDateString()),restore=el('button','btn','Restore'),remove=el('button','btn del','Delete');im.src=p.img;copy.append(name,when);restore.onclick=()=>restoreTrash(p);remove.onclick=async()=>{if(!confirm('Permanently delete this photo?'))return;await delTrash(p.id);trash=trash.filter(x=>x.id!==p.id);showTrash()};item.append(im,copy,restore,remove);list.append(item)});if(!$('trashDialog').open)$('trashDialog').showModal()}
 
 // ---- backups ----
 function scheduleBackup(){clearTimeout(bt);bt=setTimeout(()=>backup(true),2500)}
@@ -299,12 +317,13 @@ function compress(file){return new Promise((res,rej)=>{
     c.getContext('2d').drawImage(img,0,0,c.width,c.height);URL.revokeObjectURL(url);res(c.toDataURL('image/jpeg',.88))};
   img.onerror=()=>{URL.revokeObjectURL(url);rej()};img.src=url})}
 const dateOf=t=>{const d=new Date(t);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
+function fingerprint(s){let h=2166136261;for(let i=0;i<s.length;i+=31){h^=s.charCodeAt(i);h=Math.imul(h,16777619)}return s.length.toString(36)+'-'+(h>>>0).toString(36)}
 async function addFiles(files){
-  let n=0;
+  let n=0,duplicates=0;
   for(const f of files){if(!f.type.startsWith('image/'))continue;
-    try{const p={id:uid(),img:await compress(f),title:f.name.replace(/\.[^.]+$/,''),date:dateOf(f.lastModified||Date.now()),place:'',people:'',notes:'',album:curAlbum,favorite:false,added:Date.now()};
+    try{const img=await compress(f),fp=fingerprint(img);if(photos.some(p=>(p.fingerprint||fingerprint(p.img))===fp)){duplicates++;continue}const p={id:uid(),img,fingerprint:fp,title:f.name.replace(/\.[^.]+$/,''),date:dateOf(f.lastModified||Date.now()),place:'',people:'',notes:'',album:curAlbum,favorite:false,added:Date.now()};
       photos.unshift(p);await putPhoto(p);n++}catch(e){}}
-  render();if(n){toast(n+' photo'+(n>1?'s':'')+' added');scheduleBackup()}
+  render();if(n){toast(n+' photo'+(n>1?'s':'')+' added'+(duplicates?' · '+duplicates+' duplicate'+(duplicates>1?'s':'')+' skipped':''));scheduleBackup()}else if(duplicates)toast(duplicates+' duplicate'+(duplicates>1?'s':'')+' skipped')
 }
 
 // ---- render ----
@@ -320,7 +339,7 @@ async function justifyGrid(g){
   const cards=[...g.children];if(!cards.length)return;const token={};g._layoutToken=token;
   await Promise.all(cards.map(c=>{const i=c.querySelector('img');return i&&i.decode?i.decode().catch(()=>{}):Promise.resolve()}));
   if(g._layoutToken!==token||!g.classList.contains('grid'))return;
-  const width=g.clientWidth,gap=innerWidth<=640?6:10,columns=4,cardWidth=(width-gap*(columns-1))/columns,maxHeight=innerWidth<=640?300:520;
+  const width=g.clientWidth,gap=innerWidth<=640?6:10,columns=Math.max(2,Math.min(4,+displayPrefs.columns||4)),cardWidth=(width-gap*(columns-1))/columns,maxHeight=innerWidth<=640?300:520;
   const ratio=c=>{const i=c.querySelector('img');return i&&i.naturalHeight?i.naturalWidth/i.naturalHeight:1};
   const rows=[];for(let i=0;i<cards.length;i+=columns)rows.push(cards.slice(i,i+columns));
   g.innerHTML='';rows.forEach(cardsInRow=>{const height=Math.min(maxHeight,Math.max(...cardsInRow.map(c=>cardWidth/ratio(c)))),line=el('div','photo-row');cardsInRow.forEach(c=>{c.style.width=cardWidth+'px';c.style.setProperty('--photo-h',height+'px');line.append(c)});g.append(line)});
@@ -342,7 +361,7 @@ function carousel(list,g){
     if(n>1&&(Math.abs(dx)>tr.offsetWidth*.3||(v>.5&&Math.abs(dx)>30)))slide(dx<0?1:-1);
     else{tr.style.transition='transform .25s ease';tr.style.transform='translateX(0)'}};
   st.onpointerup=end;st.onpointercancel=end;
-  press(st,e=>{if(moved)return;const sl=document.elementsFromPoint(e.clientX,e.clientY).find(x=>x.classList&&x.classList.contains('slide')),o=sl?+sl.dataset.o:0;o?slide(o):openView(p)},()=>{if(!moved)edit(p)},()=>{if(!moved)toggleFavorite(p)});
+  press(st,e=>{if(moved)return;const sl=document.elementsFromPoint(e.clientX,e.clientY).find(x=>x.classList&&x.classList.contains('slide')),o=sl?+sl.dataset.o:0;o?slide(o):openView(p)},()=>{if(!moved)edit(p)},()=>{if(!moved)toggleFavorite(p,st)});
   st.append(tr,el('span','cnt',(idx+1)+' / '+list.length));if(list.length>1)st.append(l,r);
   const cap=el('div','cap');if(displayPrefs.names)cap.append(el('b',0,p.title||'Untitled'));
   cap.append(el('p',0,photoMeta(p).join(' · ')||'No date'));
@@ -365,8 +384,13 @@ function render(){
   $('meta').style.display=tab==='albums'?'none':'';document.querySelector('.search').style.visibility=tab==='albums'?'hidden':'';
   const q=$('q').value.toLowerCase(),g=$('grid');g.innerHTML='';
   if(tab==='albums'){albumsTab(g);return}
-  const list=photos.filter(p=>(!onlyFavorites||p.favorite)&&(!curAlbum||p.album===curAlbum)&&(!q||[p.title,p.place,p.people,p.notes,p.date].join(' ').toLowerCase().includes(q)))
-    .sort((a,b)=>(b.date||'').localeCompare(a.date||'')||b.added-a.added);
+  const sorter={
+    'date-desc':(a,b)=>(b.date||'').localeCompare(a.date||'')||b.added-a.added,
+    'date-asc':(a,b)=>(a.date||'').localeCompare(b.date||'')||a.added-b.added,
+    'added-desc':(a,b)=>b.added-a.added,
+    name:(a,b)=>(a.title||'').localeCompare(b.title||'')
+  }[displayPrefs.sort]||((a,b)=>b.added-a.added);
+  const list=photos.filter(p=>(!onlyFavorites||p.favorite)&&(!curAlbum||p.album===curAlbum)&&(!q||[p.title,p.place,p.people,p.notes,p.date].join(' ').toLowerCase().includes(q))).sort(sorter);
   {const al=albums.find(a=>a.id===curAlbum),base=al?photos.filter(p=>p.album===al.id):photos,n=onlyFavorites?base.filter(p=>p.favorite).length:base.length;$('count').textContent=(onlyFavorites?'Favorites · ':al?al.name+' · ':'')+n+' photo'+(n===1?'':'s')}
   shown=list;
   if(!list.length){g.className='';g.innerHTML=onlyFavorites?'<div class="empty"><h2>No favorites yet</h2>Double-tap any photo to add it here.</div>':(photos.length&&(!curAlbum||photos.some(p=>p.album===curAlbum)))?'<div class="empty"><h2>No matches</h2>Try a different search.</div>':curAlbum?'<div class="empty"><h2>This album is empty</h2>Upload while this album is open, or choose it in the details of any photo.</div>':'<div class="empty"><h2>No photos yet</h2>Tap + to upload, or drop your photobooth pictures here.</div>';return}
@@ -376,7 +400,7 @@ function render(){
     const i=document.createElement('img');i.src=p.img;i.alt=p.title||'photo';
     const d=document.createElement('div'),b=document.createElement('b'),s=document.createElement('small');
     b.textContent=p.title||'Untitled';s.textContent=photoMeta(p).join(' · ')||'No date';
-    if(displayPrefs.names)d.append(b);d.append(s);const ck=el('span','chk');ck.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7"/></svg>';c.append(i,d,ck);if(p.favorite)c.append(el('span','favmark','♥'));if(sel.has(p.id))c.classList.add('sel');press(c,()=>selecting?toggleSel(p,c):openView(p),()=>{if(!selecting){selecting=true;document.body.classList.add('selecting')}if(!sel.has(p.id))toggleSel(p,c)},()=>{if(!selecting)toggleFavorite(p)});g.append(c)});
+    if(displayPrefs.names)d.append(b);d.append(s);const ck=el('span','chk');ck.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7"/></svg>';c.append(i,d,ck);if(p.favorite)c.append(el('span','favmark','♥'));if(sel.has(p.id))c.classList.add('sel');press(c,()=>selecting?toggleSel(p,c):openView(p),()=>{if(!selecting){selecting=true;document.body.classList.add('selecting')}if(!sel.has(p.id))toggleSel(p,c)},()=>{if(!selecting)toggleFavorite(p,c)});g.append(c)});
   justifyGrid(g);
 }
 function edit(p){cur=p;$('dimg').src=p.img;
@@ -395,13 +419,14 @@ async function saveFile(filename,data){
 const clean=s=>(s||'photo').replace(/[^\w\- ]+/g,'').trim().replace(/\s+/g,'-')||'photo';
 const toBlob=u=>{const [h,b]=u.split(','),bin=atob(b),a=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)a[i]=bin.charCodeAt(i);return new Blob([a],{type:h.match(/:(.*?);/)[1]})};
 function setFavoriteButtons(p){const on=!!p.favorite;$('fav').textContent=on?'♥ Favorited':'♡ Favorite';$('fav').classList.toggle('faved',on);$('lbfav').textContent=on?'♥':'♡';$('lbfav').classList.toggle('faved',on);$('lbfav').setAttribute('aria-label',on?'Remove favorite':'Add favorite')}
-async function toggleFavorite(p){p.favorite=!p.favorite;await putPhoto(p);setFavoriteButtons(p);render();scheduleBackup();toast(p.favorite?'Added to favorites':'Removed from favorites')}
+function favoritePulse(node){if(!node)return;const h=el('span','heartburst','♥');node.append(h);setTimeout(()=>h.remove(),700)}
+async function toggleFavorite(p,node){p.favorite=!p.favorite;if(p.favorite)favoritePulse(node);await putPhoto(p);setFavoriteButtons(p);setTimeout(()=>render(),p.favorite&&node?350:0);scheduleBackup();toast(p.favorite?'Added to favorites':'Removed from favorites')}
 
 $('save').onclick=async()=>{Object.assign(cur,{title:$('f-title').value.trim(),date:$('f-date').value,place:$('f-place').value.trim(),people:$('f-people').value.trim(),notes:$('f-notes').value.trim(),album:$('f-album').value});
   await putPhoto(cur);render();$('dlg').close();toast('Saved');scheduleBackup()};
 $('fav').onclick=()=>toggleFavorite(cur);
 $('rm').onclick=async()=>{if(!confirm('Delete this photo?'))return;
-  photos=photos.filter(p=>p.id!==cur.id);await delPhoto(cur.id);render();$('dlg').close();toast('Deleted');scheduleBackup()};
+  await moveToTrash(cur);photos=photos.filter(p=>p.id!==cur.id);render();$('dlg').close();toast('Moved to recently deleted');scheduleBackup()};
 $('dl').onclick=()=>saveFile(clean(($('f-title').value||'photo')+'-'+($('f-date').value||''))+'.jpg',toBlob(cur.img));
 $('close').onclick=()=>$('dlg').close();
 $('exp').onclick=()=>{if(!photos.length)return toast('Nothing to export');
@@ -410,12 +435,12 @@ $('imp').onclick=()=>$('jfile').click();
 $('jfile').onchange=async e=>{const f=e.target.files[0];e.target.value='';if(!f)return;
   try{const d=JSON.parse(await f.text());if(!d||!Array.isArray(d.photos))throw 0;
     const ids=new Set(albums.map(a=>a.id));
-    for(const a of (d.albums||[])){if(a&&a.id&&a.name&&!ids.has(String(a.id))){const na={id:String(a.id),name:String(a.name).slice(0,40),created:+a.created||Date.now()};albums.push(na);ids.add(na.id);await putAlbum(na)}}
-    const have=new Set(photos.map(p=>p.id));let n=0;
+    for(const a of (d.albums||[])){if(a&&a.id&&a.name&&!ids.has(String(a.id))){const na={id:String(a.id),name:String(a.name).slice(0,40),created:+a.created||Date.now(),coverId:String(a.coverId||'')};albums.push(na);ids.add(na.id);await putAlbum(na)}}
+    const have=new Set(photos.map(p=>p.id)),fingerprints=new Set(photos.map(p=>p.fingerprint||fingerprint(p.img)));let n=0,duplicates=0;
     for(const p of d.photos){if(!p.img||!p.img.startsWith('data:image/'))continue;
-      const q={id:have.has(p.id)||!p.id?uid():String(p.id),img:p.img,title:String(p.title||''),date:String(p.date||''),place:String(p.place||''),people:String(p.people||''),notes:String(p.notes||''),album:ids.has(String(p.album))?String(p.album):'',favorite:!!p.favorite,added:+p.added||Date.now()};
+      const fp=p.fingerprint||fingerprint(p.img);if(fingerprints.has(fp)){duplicates++;continue}fingerprints.add(fp);const q={id:have.has(p.id)||!p.id?uid():String(p.id),img:p.img,fingerprint:fp,title:String(p.title||''),date:String(p.date||''),place:String(p.place||''),people:String(p.people||''),notes:String(p.notes||''),album:ids.has(String(p.album))?String(p.album):'',favorite:!!p.favorite,added:+p.added||Date.now()};
       photos.push(q);await putPhoto(q);n++}
-    render();toast(n+' photo'+(n===1?'':'s')+' imported');scheduleBackup()}
+    render();toast(n+' photo'+(n===1?'':'s')+' imported'+(duplicates?' · '+duplicates+' duplicate'+(duplicates>1?'s':'')+' skipped':''));scheduleBackup()}
   catch(err){toast('That file isn\'t a valid export')}};
 
 // ---- tap = zoom view, long press = edit ----
@@ -443,12 +468,13 @@ function lbStep(d){const n=lbList.length;if(n<2||lbBusy)return;lbBusy=true;
     im.style.transition='none';im.style.transform='translateX('+(d*W*.5)+'px)';im.style.opacity='0';void im.offsetWidth;
     im.style.transition='transform .22s ease,opacity .22s';im.style.transform='';im.style.opacity='';
     setTimeout(()=>{lbBusy=false},230)},200)}
-{const w=$('lbwrap'),im=$('lbimg');let x0=null,dx=0,t0=0;
-  w.addEventListener('pointerdown',e=>{if(w.classList.contains('z')||lbBusy)return;x0=e.clientX;dx=0;t0=Date.now();lbMoved=false;im.style.transition='none'});
-  w.addEventListener('pointermove',e=>{if(x0==null)return;dx=e.clientX-x0;if(Math.abs(dx)>6)lbMoved=true;if(lbList.length<2)dx*=.3;im.style.transform='translateX('+dx+'px)'});
-  const end=()=>{if(x0==null)return;const v=Math.abs(dx)/(Date.now()-t0+1);x0=null;
+{const w=$('lbwrap'),im=$('lbimg');let x0=null,y0=null,dx=0,dy=0,t0=0;
+  w.addEventListener('pointerdown',e=>{if(w.classList.contains('z')||lbBusy)return;x0=e.clientX;y0=e.clientY;dx=dy=0;t0=Date.now();lbMoved=false;im.style.transition='none'});
+  w.addEventListener('pointermove',e=>{if(x0==null)return;dx=e.clientX-x0;dy=e.clientY-y0;if(Math.hypot(dx,dy)>6)lbMoved=true;if(Math.abs(dy)>Math.abs(dx)){im.style.transform='translateY('+Math.max(0,dy)+'px)';im.style.opacity=String(Math.max(.35,1-Math.max(0,dy)/innerHeight))}else{if(lbList.length<2)dx*=.3;im.style.transform='translateX('+dx+'px)'}});
+  const end=()=>{if(x0==null)return;const v=Math.abs(dx)/(Date.now()-t0+1),down=dy>100&&Math.abs(dy)>Math.abs(dx);x0=y0=null;
+    if(down){$('lb').close();im.style.transform='';im.style.opacity='';return}
     if(lbList.length>1&&(Math.abs(dx)>w.clientWidth*.2||(v>.5&&Math.abs(dx)>30)))lbStep(dx<0?1:-1);
-    else{im.style.transition='transform .22s ease';im.style.transform=''}};
+    else{im.style.transition='transform .22s ease,opacity .22s';im.style.transform='';im.style.opacity=''}};
   w.addEventListener('pointerup',end);w.addEventListener('pointercancel',end);
   im.onclick=e=>{if(lbMoved){lbMoved=false;return}const r=im.getBoundingClientRect(),fx=(e.clientX-r.left)/r.width,fy=(e.clientY-r.top)/r.height;
     if(w.classList.toggle('z'))requestAnimationFrame(()=>{w.scrollLeft=fx*im.offsetWidth-w.clientWidth/2;w.scrollTop=fy*im.offsetHeight-w.clientHeight/2})};
@@ -464,7 +490,9 @@ $('lbclose').onclick=()=>$('lb').close();
 function renderAlbums(){const on=!!curAlbum&&tab==='photos';$('aedit').hidden=!on;$('aback').hidden=!on}
 let aEdit=null,aSure=false;
 function openAlbum(a){aEdit=a;aSure=false;$('atitle').textContent=a?'Edit album':'New album';$('aname').value=a?a.name:'';
-  $('adel').hidden=!a;$('adel').textContent='Delete album';$('anote').textContent='';$('adlg').showModal();setTimeout(()=>$('aname').focus(),50)}
+  $('adel').hidden=!a;$('asetcover').hidden=!a;$('adel').textContent='Delete album';$('anote').textContent='';$('adlg').showModal();setTimeout(()=>$('aname').focus(),50)}
+function chooseAlbumCover(a){const list=$('coverList');list.innerHTML='';const ps=photos.filter(p=>p.album===a.id);if(!ps.length)list.innerHTML='<div class="empty"><h2>No photos</h2>Add photos to this album first.</div>';ps.forEach(p=>{const tile=el('button','atile'),box=el('div','acov'),im=el('img');tile.type='button';im.src=p.img;box.append(im);tile.append(box);tile.onclick=async()=>{a.coverId=p.id;await putAlbum(a);$('coverDialog').close();render();toast('Album cover updated')};list.append(tile)});$('adlg').close();$('coverDialog').showModal()}
+$('asetcover').onclick=()=>chooseAlbumCover(aEdit);$('coverClose').onclick=()=>$('coverDialog').close();$('coverAuto').onclick=async()=>{if(!aEdit)return;aEdit.coverId='';await putAlbum(aEdit);$('coverDialog').close();render();toast('Using newest photo as cover')};
 $('asave').onclick=async()=>{const n=$('aname').value.trim();if(!n)return;
   if(aEdit){aEdit.name=n;await putAlbum(aEdit)}
   else{const a={id:uid(),name:n,created:Date.now()};albums.push(a);await putAlbum(a)}
@@ -491,22 +519,23 @@ applyTheme();
 const PH='<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="1.5"/><path d="M21 16l-5-5-8 9"/></svg>';
 function albumsTab(g){g.className='agrid';
   const cover=l=>l.slice().sort((a,b)=>(b.date||'').localeCompare(a.date||'')||b.added-a.added)[0];
-  const tile=(name,ps,fn,lp)=>{const t=el('div','atile'),box=el('div','acov'),p=cover(ps);
+  const tile=(name,ps,fn,lp,coverId)=>{const t=el('div','atile'),box=el('div','acov'),p=ps.find(x=>x.id===coverId)||cover(ps);
     if(p){const i=el('img');i.src=p.img;i.alt='';i.draggable=false;box.append(i)}else box.innerHTML=PH;
     t.append(box,el('b',0,name),el('small',0,ps.length+' photo'+(ps.length===1?'':'s')));press(t,fn,lp||(()=>{}));g.append(t)};
   tile('All photos',photos,()=>{curAlbum='';onlyFavorites=false;tab='photos';idx=0;render()});
   tile('Favorites',photos.filter(p=>p.favorite),()=>{curAlbum='';onlyFavorites=true;tab='photos';idx=0;render()});
-  albums.slice().sort((a,b)=>a.created-b.created).forEach(a=>tile(a.name,photos.filter(p=>p.album===a.id),()=>{curAlbum=a.id;onlyFavorites=false;tab='photos';idx=0;render()},()=>openAlbum(a)));
+  albums.slice().sort((a,b)=>a.created-b.created).forEach(a=>tile(a.name,photos.filter(p=>p.album===a.id),()=>{curAlbum=a.id;onlyFavorites=false;tab='photos';idx=0;render()},()=>openAlbum(a),a.coverId));
   const n=el('div','atile');n.innerHTML='<div class="acov new">+</div><b>New album</b>';n.onclick=()=>openAlbum(null);g.append(n)}
 function startSelect(){exitSelect();if($('settingsDialog').open)$('settingsDialog').close();tab='photos';view='grid';selecting=true;document.body.classList.add('selecting');$('menu').hidden=true;render();updSel()}
 function exitSelect(){if(!selecting)return;selecting=false;sel.clear();document.body.classList.remove('selecting');document.querySelectorAll('.card.sel').forEach(c=>c.classList.remove('sel'))}
-function updSel(){$('scount').textContent=sel.size+' selected';$('sdel').textContent='Delete';$('sdel').dataset.sure=''}
+function updSel(){$('scount').textContent=sel.size+' selected';$('sdel').textContent='Delete';$('sdel').dataset.sure='';const chosen=photos.filter(p=>sel.has(p.id));$('sfav').textContent=chosen.length&&chosen.every(p=>p.favorite)?'Unfavorite':'Favorite'}
 function toggleSel(p,c){sel.has(p.id)?sel.delete(p.id):sel.add(p.id);c.classList.toggle('sel',sel.has(p.id));updSel()}
 $('sx').onclick=exitSelect;
 $('sall').onclick=()=>{shown.forEach(p=>sel.add(p.id));render();updSel()};
+$('sfav').onclick=async()=>{const chosen=photos.filter(p=>sel.has(p.id));if(!chosen.length)return;const value=!chosen.every(p=>p.favorite);for(const p of chosen){p.favorite=value;await putPhoto(p)}toast(value?'Added to favorites':'Removed from favorites');exitSelect();render();scheduleBackup()};
 $('sdel').onclick=async()=>{if(!sel.size)return;const b=$('sdel');
   if(!b.dataset.sure){b.dataset.sure='1';b.textContent='Tap again';setTimeout(()=>{if(b.dataset.sure){b.dataset.sure='';b.textContent='Delete'}},3000);return}
-  const ids=[...sel];photos=photos.filter(p=>!sel.has(p.id));for(const id of ids)await delPhoto(id);exitSelect();render();toast(ids.length+' deleted');scheduleBackup()};
+  const ids=[...sel],items=photos.filter(p=>sel.has(p.id));for(const p of items)await moveToTrash(p);photos=photos.filter(p=>!sel.has(p.id));exitSelect();render();toast(ids.length+' moved to recently deleted');scheduleBackup()};
 const fname=p=>clean((p.title||'photo')+'-'+(p.date||''))+'.jpg';
 $('sdl').onclick=async()=>{const arr=photos.filter(p=>sel.has(p.id));if(!arr.length)return;
   for(let i=0;i<arr.length;i++){await saveFile((arr.length>1?(i+1)+'-':'')+fname(arr[i]),toBlob(arr[i].img));if(arr.length>1)await new Promise(r=>setTimeout(r,180))}};
@@ -530,9 +559,11 @@ $('tal').onclick=()=>{exitSelect();tab='albums';$('menu').hidden=true;render()};
 $('fab').onclick=()=>$('file').click();
 $('aback').onclick=()=>{tab='albums';curAlbum='';onlyFavorites=false;render()};
 $('startsel').onclick=startSelect;
-$('settings').onclick=()=>{$('showNames').checked=displayPrefs.names;$('showDetails').checked=displayPrefs.details;$('settingsDialog').showModal()};
-function saveDisplayPrefs(){displayPrefs={names:$('showNames').checked,details:$('showDetails').checked};try{localStorage.setItem('mmnto-display',JSON.stringify(displayPrefs))}catch(e){}render();if($('lb').open)showAt(lbI)}
-$('showNames').onchange=saveDisplayPrefs;$('showDetails').onchange=saveDisplayPrefs;$('settingsClose').onclick=()=>$('settingsDialog').close();
+$('settings').onclick=async()=>{$('showNames').checked=displayPrefs.names;$('showDetails').checked=displayPrefs.details;$('sortPhotos').value=displayPrefs.sort;$('gridColumns').value=String(displayPrefs.columns);$('settingsDialog').showModal();const bytes=photos.reduce((n,p)=>n+(p.img?p.img.length*.75:0),0);let note=photos.length+' photos · about '+formatBytes(bytes);try{const e=await navigator.storage.estimate();if(e.quota)note+=' · '+formatBytes(e.usage||0)+' of '+formatBytes(e.quota)+' browser storage used'}catch(e){}$('storageStat').textContent=note};
+const formatBytes=n=>n<1048576?Math.round(n/1024)+' KB':(n/1048576).toFixed(1)+' MB';
+function saveDisplayPrefs(){displayPrefs={names:$('showNames').checked,details:$('showDetails').checked,sort:$('sortPhotos').value,columns:+$('gridColumns').value};try{localStorage.setItem('mmnto-display',JSON.stringify(displayPrefs))}catch(e){}render();if($('lb').open)showAt(lbI)}
+$('showNames').onchange=saveDisplayPrefs;$('showDetails').onchange=saveDisplayPrefs;$('sortPhotos').onchange=saveDisplayPrefs;$('gridColumns').onchange=saveDisplayPrefs;$('settingsClose').onclick=()=>$('settingsDialog').close();
+$('trashButton').onclick=()=>{$('settingsDialog').close();showTrash()};$('trashClose').onclick=()=>$('trashDialog').close();$('emptyTrash').onclick=async()=>{if(!trash.length||!confirm('Permanently delete every photo in trash?'))return;await req(store('trash','readwrite').clear());trash=[];showTrash();toast('Trash emptied')};
 $('menu').onclick=()=>{$('menu').hidden=true};
 document.addEventListener('click',()=>{$('menu').hidden=true});
 addEventListener('keydown',e=>{if(e.key==='Escape')$('menu').hidden=true});
@@ -548,7 +579,7 @@ let resizeTimer;addEventListener('resize',()=>{clearTimeout(resizeTimer);resizeT
 if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));
 
 (async()=>{
-  try{db=await open();photos=await req(store('photos').getAll());albums=await req(store('albums').getAll());
+  try{db=await open();photos=await req(store('photos').getAll());albums=await req(store('albums').getAll());trash=await req(store('trash').getAll());await purgeOldTrash();
     const ks=await req(store('backups').getAllKeys());
     if(ks.length)$('bkstat').textContent='Last backup '+new Date(Math.max(...ks)).toLocaleString([], {month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});
     // restore automatically if the main store is empty but a backup exists
