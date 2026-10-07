@@ -61,7 +61,7 @@ main{max-width:1100px;margin:auto;padding:16px;min-height:60vh}
 .photo-row{display:flex;align-items:flex-start;gap:10px;width:100%}
 .photo-row .card{flex:none;min-width:0}
 .card{cursor:pointer}
-.card img{width:100%;height:var(--photo-h,150px);aspect-ratio:auto;object-fit:cover;display:block;border-radius:10px;background:var(--soft);transition:opacity .15s}
+.card img{width:100%;height:var(--photo-h,150px);aspect-ratio:auto;object-fit:contain;display:block;border-radius:0;background:var(--soft);transition:opacity .15s}
 .card:hover img{opacity:.88}
 .card div{padding:6px 2px 0}
 .card b{display:block;font-weight:600;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -141,7 +141,7 @@ main{padding-bottom:calc(150px + env(safe-area-inset-bottom,0px))}
 .chk svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;opacity:0}
 body.selecting .chk{display:flex}
 .card.sel .chk{background:var(--acc);border-color:var(--acc);color:var(--accink)}.card.sel .chk svg{opacity:1}
-.card.sel img{transform:scale(.92);border-radius:10px}
+.card.sel img{transform:scale(.92);border-radius:0}
 #selbar{position:fixed;top:0;left:0;right:0;z-index:30;display:none;align-items:center;gap:4px;padding:calc(10px + env(safe-area-inset-top,0px)) 10px 10px;background:var(--card);border-bottom:1px solid var(--line)}
 body.selecting #selbar{display:flex}
 #selbar .sp{flex:1}#selbar svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;display:block}
@@ -320,12 +320,10 @@ async function justifyGrid(g){
   const cards=[...g.children];if(!cards.length)return;const token={};g._layoutToken=token;
   await Promise.all(cards.map(c=>{const i=c.querySelector('img');return i&&i.decode?i.decode().catch(()=>{}):Promise.resolve()}));
   if(g._layoutToken!==token||!g.classList.contains('grid'))return;
-  const width=g.clientWidth,gap=innerWidth<=640?6:10,target=innerWidth<=640?112:180;
+  const width=g.clientWidth,gap=innerWidth<=640?6:10,columns=4,cardWidth=(width-gap*(columns-1))/columns,maxHeight=innerWidth<=640?300:520;
   const ratio=c=>{const i=c.querySelector('img');return i&&i.naturalHeight?i.naturalWidth/i.naturalHeight:1};
-  const rows=[];let row=[],sum=0;
-  cards.forEach(c=>{row.push(c);sum+=ratio(c);const h=(width-gap*(row.length-1))/sum;if(h<=target||row.length===4){rows.push({cards:row,height:Math.min(target,h)});row=[];sum=0}});
-  if(row.length)rows.push({cards:row,height:Math.min(target,(width-gap*(row.length-1))/sum)});
-  g.innerHTML='';rows.forEach(r=>{const line=el('div','photo-row');r.cards.forEach(c=>{const ar=ratio(c);c.style.width=Math.max(36,r.height*ar)+'px';c.style.setProperty('--photo-h',r.height+'px');line.append(c)});g.append(line)});
+  const rows=[];for(let i=0;i<cards.length;i+=columns)rows.push(cards.slice(i,i+columns));
+  g.innerHTML='';rows.forEach(cardsInRow=>{const height=Math.min(maxHeight,Math.max(...cardsInRow.map(c=>cardWidth/ratio(c)))),line=el('div','photo-row');cardsInRow.forEach(c=>{c.style.width=cardWidth+'px';c.style.setProperty('--photo-h',height+'px');line.append(c)});g.append(line)});
 }
 function carousel(list,g){
   shown=list;g.className='';g.innerHTML='';if(idx>=list.length)idx=0;
